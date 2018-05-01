@@ -1,0 +1,112 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using RHZ.Data;
+using Microsoft.EntityFrameworkCore;
+using RHZ.Pages.Message;
+using Microsoft.Extensions.Logging;
+
+namespace RHZ.Controllers
+{
+    public class MessageController : Controller
+    {
+        private readonly ApplicationDbContext _c;
+        private UserManager<ApplicationUser> _m;
+        private readonly ILogger _l;
+
+        private ApplicationUser Me()
+        {
+            return _m.Users.Include(x => x.Email)
+                .FirstOrDefault(x => x.Id == _m.GetUserId(User));
+        }
+
+        // GET: Message
+        public ActionResult Index()
+        {
+            return View(new IndexModel(_c));
+        }
+
+        // GET: Message/Details/5
+        public ActionResult Details(int id)
+        {
+            return View(new DetailsModel(_c));
+        }
+
+        // GET: Message/Create
+        [HttpGet]
+        public ActionResult Create()
+        {
+            _l.LogInformation("GET: Message/Create");
+            return View(new CreateModel(_c));
+        }
+
+        // POST: Message/Create
+        [HttpPost]
+        public ActionResult Create(FormCollection form)
+        {
+            _l.LogInformation("POST: Message/Create");
+            var m = new Message
+            {
+                Title = form["Title"],
+                CreatedAt = DateTime.Now,
+                Author = Me(),
+                Text = form["text"]
+            };
+            _l.LogInformation($"Message '{m.Title}' added");
+            _c.Messages.Add(m);
+            _c.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Message/Edit/5
+        public ActionResult Edit(int id)
+        {
+            return View(new EditModel(_c));
+        }
+
+        // POST: Message/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, EditModel m)
+        {
+            try
+            {
+                _c.Messages.Update(m.Message);
+                _c.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View(m);
+            }
+        }
+
+        // GET: Message/Delete/5
+        public ActionResult Delete(int id)
+        {
+            return View();
+        }
+
+        // POST: Message/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, DeleteModel m)
+        {
+            try
+            {
+                _c.Messages.Remove(m.Message);
+                _c.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View(m);
+            }
+        }
+    }
+}

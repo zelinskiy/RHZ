@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RHZ.Data;
 using RHZ.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RHZ
 {
@@ -38,6 +39,8 @@ namespace RHZ
                 {
                     options.Conventions.AuthorizeFolder("/Account/Manage");
                     options.Conventions.AuthorizePage("/Account/Logout");
+                    options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
+                    
                 });
 
             // Register no-op EmailSender used by account confirmation and password reset during development
@@ -63,7 +66,9 @@ namespace RHZ
 
             app.UseAuthentication();
 
-            app.UseMvc();
+            app.UseMvc(o => o.MapRoute(
+                name: "default",
+                template: "{controller=Home}/{action=Index}/{id:int}"));
         }
     }
 }
