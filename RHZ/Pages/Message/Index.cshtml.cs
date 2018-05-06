@@ -22,7 +22,9 @@ namespace RHZ.Pages.Message
 
         public async Task OnGetAsync()
         {
-            Message = await _context.Messages.ToListAsync();
+            Message = await _context.Messages
+                .Include(m => m.Author)
+                .ToListAsync();
             foreach(var m in Message)
             {
                 m.Likes = _context.Likes

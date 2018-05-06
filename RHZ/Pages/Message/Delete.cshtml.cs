@@ -47,11 +47,10 @@ namespace RHZ.Pages.Message
             }           
 
             Message = await _context.Messages
-                .Include(m => m.Author.Id)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id 
+                    && m.Author.UserName== User.Identity.Name);
 
-            if (Message != null 
-                && User.Identity.Name != Message.Author.Id)
+            if (Message != null)
             {
                 _context.Messages.Remove(Message);
                 await _context.SaveChangesAsync();
